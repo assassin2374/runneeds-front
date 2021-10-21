@@ -1,22 +1,17 @@
 import React from "react";
+import Axios from "axios";
 import "./App.css";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+import Home from "./view/Home";
+
+Axios.defaults.baseURL = "http://localhost:4000/api/";
 
 const App: React.FC = () => {
   return (
     <>
-      <h1>Runneeds</h1>
-      <TextField
-        label="Size"
-        id="outlined-size-small"
-        defaultValue="Small"
-        variant="outlined"
-        size="small"
-      />
-      <Button variant="contained" color="primary">
-        Button
-      </Button>
+      <Router>
+        <Route exact path="/" component={Home} />
+      </Router>
     </>
   );
 };
