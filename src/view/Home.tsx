@@ -1,26 +1,31 @@
+import * as React from "react";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import Axios from "axios";
-import { Activity, initActivity } from "../model/Activity";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
+import { Activity } from "../model/Activity";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 // @mui用
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import AdapterDateFns from "@mui/lab/AdapterDateFns";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import DateTimePicker from "@mui/lab/DateTimePicker";
 
 const Home: React.FC = () => {
   const initActivitiesList: Activity[] = [];
   const [activitiesList, setActivitiesList] = useState(initActivitiesList);
+  const [startTime, setStartTime] = useState<Date | null>(new Date());
+  const [goalTime, setGoalTime] = useState<Date | null>(new Date());
 
   useEffect(() => {
     (async () => {
       const response = await Axios.get<Activity[]>("activity");
-      console.warn(response.data);
       setActivitiesList(response.data);
     })();
   }, [setActivitiesList]);
@@ -29,39 +34,54 @@ const Home: React.FC = () => {
     <>
       <h1>Runneeds</h1>
       <TableContainer component={Paper}>
-        <TableHead>
-          <TableRow>
-            <TableCell align="right">開始時刻</TableCell>
-            <TableCell align="right">終了時刻</TableCell>
-            <TableCell align="right">距離</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {activitiesList.map((activity) => {
-            return (
-              <TableRow key={activity.id}>
-                <TableCell align="right">{activity.startTime}</TableCell>
-                <TableCell align="right">{activity.goalTime}</TableCell>
-                <TableCell align="right">{activity.distance}</TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
+        <Table sx={{ minWidth: 100, maxWidth: 500 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="right">開始時刻</TableCell>
+              <TableCell align="right">終了時刻</TableCell>
+              <TableCell align="right">距離</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {activitiesList.map((activity) => {
+              return (
+                <TableRow
+                  key={activity.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="right">{activity.startTime}</TableCell>
+                  <TableCell align="right">{activity.goalTime}</TableCell>
+                  <TableCell align="right">{activity.distance}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </TableContainer>
-      <TextField
-        label="開始時刻"
-        id="outlined-size-small"
-        defaultValue=""
-        variant="outlined"
-        size="small"
-      />
-      <TextField
-        label="終了時刻"
-        id="outlined-size-small"
-        defaultValue=""
-        variant="outlined"
-        size="small"
-      />
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DateTimePicker
+          renderInput={(props) => {
+            return <TextField {...props} />;
+          }}
+          label="開始時刻"
+          value={startTime}
+          onChange={(newValue) => {
+            setStartTime(newValue);
+          }}
+        />
+      </LocalizationProvider>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DateTimePicker
+          renderInput={(props) => {
+            return <TextField {...props} />;
+          }}
+          label="終了時刻"
+          value={goalTime}
+          onChange={(newValue) => {
+            setGoalTime(newValue);
+          }}
+        />
+      </LocalizationProvider>
       <TextField
         label="距離"
         id="outlined-size-small"
@@ -70,7 +90,7 @@ const Home: React.FC = () => {
         size="small"
       />
       <Button variant="contained" color="primary">
-        Button
+        追加
       </Button>
     </>
   );
