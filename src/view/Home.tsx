@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+//import { useHistory } from "react-router-dom";
 import Axios from "axios";
 import { Activity } from "../model/Activity";
 import Button from "@mui/material/Button";
@@ -22,6 +22,7 @@ const Home: React.FC = () => {
   const [activitiesList, setActivitiesList] = useState(initActivitiesList);
   const [startTime, setStartTime] = useState<Date | null>(new Date());
   const [goalTime, setGoalTime] = useState<Date | null>(new Date());
+  const [distance, setDistance] = useState<number>();
 
   useEffect(() => {
     (async () => {
@@ -29,6 +30,12 @@ const Home: React.FC = () => {
       setActivitiesList(response.data);
     })();
   }, [setActivitiesList]);
+
+  const changeDistance = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // if (e.target.value === "number") {
+    const distance = Number(e.target.value);
+    setDistance(distance);
+  };
 
   return (
     <>
@@ -87,7 +94,9 @@ const Home: React.FC = () => {
         id="outlined-size-small"
         defaultValue=""
         variant="outlined"
-        size="small"
+        type="number"
+        value={distance}
+        onChange={changeDistance}
       />
       <Button variant="contained" color="primary">
         追加
