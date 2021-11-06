@@ -16,13 +16,17 @@ import Paper from "@mui/material/Paper";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import LocalizationProvider from "@mui/lab/LocalizationProvider";
 import DateTimePicker from "@mui/lab/DateTimePicker";
+import { AlertModel, initAlertModel } from "../model/AlertModel";
+import { Alert } from "../components/Alert";
 
 const Home: React.FC = () => {
   const initActivitiesList: Activity[] = [];
   const [activitiesList, setActivitiesList] = useState(initActivitiesList);
+  const [activity, setActivity] = useState<Activity>();
   const [startTime, setStartTime] = useState<Date | null>(new Date());
   const [goalTime, setGoalTime] = useState<Date | null>(new Date());
   const [distance, setDistance] = useState<number>();
+  const [alertModel, setAlertModel] = useState<AlertModel>(initAlertModel);
 
   useEffect(() => {
     (async () => {
@@ -32,39 +36,35 @@ const Home: React.FC = () => {
   }, [setActivitiesList]);
 
   const changeDistance = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // if (e.target.value === "number") {
     const distance = Number(e.target.value);
     setDistance(distance);
+  };
+
+  const addActivity = async () => {
+    if (distance == null) {
+      const alert: AlertModel = {
+        isDisplay: true,
+        type: "error",
+        description: "未入力の項目が存在します。",
+      };
+      setAlertModel(alert);
+      return;
+    }
+    const addActivity: Activity = {
+      startTime: startTime,
+      goalTime: goalTime,
+      distance: distance,
+      userId: 1,
+    };
+    setActivity(addActivity);
+    await Axios.post<Activity>("activity", addActivity);
+    const response = await Axios.get<Activity[]>("activity");
+    setActivitiesList(response.data);
   };
 
   return (
     <>
       <h1>Runneeds</h1>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 100, maxWidth: 500 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TableCell align="right">開始時刻</TableCell>
-              <TableCell align="right">終了時刻</TableCell>
-              <TableCell align="right">距離</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {activitiesList.map((activity) => {
-              return (
-                <TableRow
-                  key={activity.id}
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell align="right">{activity.startTime}</TableCell>
-                  <TableCell align="right">{activity.goalTime}</TableCell>
-                  <TableCell align="right">{activity.distance}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DateTimePicker
           renderInput={(props) => {
@@ -98,9 +98,39 @@ const Home: React.FC = () => {
         value={distance}
         onChange={changeDistance}
       />
-      <Button variant="contained" color="primary">
+      <Button variant="contained" color="primary" onClick={addActivity}>
         追加
       </Button>
+      <Alert alert={alertModel}></Alert>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 100, maxWidth: 500 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="right">開始時刻</TableCell>
+              <TableCell align="right">終了時刻</TableCell>
+              <TableCell align="right">距離</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {activitiesList.map((activity) => {
+              return (
+                <TableRow
+                  key={activity.id}
+                  sx={{
+                    "&:last-child td, &:last-child th": { border: 0 },
+                    cursor: "pointer",
+                  }}
+                  hover
+                >
+                  <TableCell align="right">{activity.startTime}</TableCell>
+                  <TableCell align="right">{activity.goalTime}</TableCell>
+                  <TableCell align="right">{activity.distance}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </>
   );
 };
