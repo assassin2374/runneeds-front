@@ -19,10 +19,11 @@ import DateTimePicker from "@mui/lab/DateTimePicker";
 import { AlertModel, initAlertModel } from "../model/AlertModel";
 import { Alert } from "../components/Alert";
 
+import { convertJST, dateToString } from "../utils/Date";
+
 const Home: React.FC = () => {
   const initActivitiesList: Activity[] = [];
   const [activitiesList, setActivitiesList] = useState(initActivitiesList);
-  const [activity, setActivity] = useState<Activity>();
   const [startTime, setStartTime] = useState<Date | null>(new Date());
   const [goalTime, setGoalTime] = useState<Date | null>(new Date());
   const [distance, setDistance] = useState<number>();
@@ -38,6 +39,14 @@ const Home: React.FC = () => {
   const changeDistance = (e: React.ChangeEvent<HTMLInputElement>) => {
     const distance = Number(e.target.value);
     setDistance(distance);
+  };
+
+  const getStringFromDate = (date: Date | null): string => {
+    if (date == null) {
+      return "";
+    }
+    const jstDate = convertJST(date);
+    return dateToString(jstDate);
   };
 
   const addActivity = async () => {
@@ -56,10 +65,15 @@ const Home: React.FC = () => {
       distance: distance,
       userId: 1,
     };
-    setActivity(addActivity);
+    //setActivity(addActivity);
     await Axios.post<Activity>("activity", addActivity);
     const response = await Axios.get<Activity[]>("activity");
     setActivitiesList(response.data);
+  };
+
+  const deleteActivity = (activity: Activity | null) => {
+    console.warn(activity);
+    return;
   };
 
   return (
@@ -122,9 +136,20 @@ const Home: React.FC = () => {
                   }}
                   hover
                 >
-                  <TableCell align="right">{activity.startTime}</TableCell>
-                  <TableCell align="right">{activity.goalTime}</TableCell>
+                  <TableCell align="right">
+                    {getStringFromDate(activity.startTime)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {getStringFromDate(activity.goalTime)}
+                  </TableCell>
                   <TableCell align="right">{activity.distance}</TableCell>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={deleteActivity(activity)}
+                  >
+                    削除
+                  </Button>
                 </TableRow>
               );
             })}
