@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-//import { useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Axios from "axios";
 import { Activity } from "../model/Activity";
 import Button from "@mui/material/Button";
@@ -28,6 +29,8 @@ const Home: React.FC = () => {
   const [goalTime, setGoalTime] = useState<Date | null>(new Date());
   const [distance, setDistance] = useState<number>();
   const [alertModel, setAlertModel] = useState<AlertModel>(initAlertModel);
+
+  const history = useHistory();
 
   useEffect(() => {
     (async () => {
@@ -71,8 +74,10 @@ const Home: React.FC = () => {
     setActivitiesList(response.data);
   };
 
-  const deleteActivity = (activity: Activity | null) => {
-    console.warn(activity);
+  const deleteActivity = async (id: number | undefined) => {
+    await Axios.delete(`activity/${id}`);
+    const response = await Axios.get<Activity[]>("activity");
+    setActivitiesList(response.data);
     return;
   };
 
@@ -135,6 +140,9 @@ const Home: React.FC = () => {
                     cursor: "pointer",
                   }}
                   hover
+                  onClick={() => {
+                    history.push(`/edit/${activity.id}`);
+                  }}
                 >
                   <TableCell align="right">
                     {getStringFromDate(activity.startTime)}
@@ -146,7 +154,12 @@ const Home: React.FC = () => {
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={deleteActivity(activity)}
+                    onClick={(
+                      e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+                    ) => {
+                      deleteActivity(activity.id);
+                      e.stopPropagation();
+                    }}
                   >
                     削除
                   </Button>
